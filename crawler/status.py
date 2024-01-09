@@ -1,3 +1,4 @@
+from db import DB
 import time
 import requests
 import pandas as pd
@@ -58,6 +59,7 @@ class StatusCrawler:
         return url+sorted(next_urls)[0]
 
 
+db = DB(config=Config.db_local)
 for uid in Config.uids:
     c = StatusCrawler(uid)
     result = []
@@ -70,3 +72,16 @@ for uid in Config.uids:
         time.sleep(3)
     with open(f"./{uid}.json", "w") as f:
         json.dump(result, f, ensure_ascii=False, indent=4)
+
+for uid in Config.uids:
+    subs = json.load(open(f"{uid}.json", 'r'))
+    try:
+        db.cursor.executemany(
+            """insert into submission (sid, uid, pid, result, timestamp)
+            values (%(sid)s, %(uid)s, %(pid)s, %(result)s, %(timestamp)s)""",
+            subs
+        )
+        db.cursor.close()
+        db.connection.commit()
+    except Exception as e:
+        pass
