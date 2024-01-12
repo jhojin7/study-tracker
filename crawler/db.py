@@ -10,7 +10,7 @@ class DB:
         self.cursor = self.connection.cursor()
 
     def myquery(self):
-        self.cursor.execute("drop table if exists submission;")
+        # self.cursor.execute("drop table if exists submission;")
         self.cursor.execute(
             """
             create table if not exists submission (
