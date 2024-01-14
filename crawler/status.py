@@ -64,24 +64,15 @@ for uid in Config.uids:
     c = StatusCrawler(uid)
     result = []
     url = c.init_url
-    for _ in range(5):
+    for _ in range(1):
         soup = c.get_soup_http(url)
         result.extend(c.get_current_page(soup))
         print(url, len(result))
         url = c.get_next_url(soup)
         time.sleep(3)
-    with open(f"./{uid}.json", "w") as f:
-        json.dump(result, f, ensure_ascii=False, indent=4)
-
-for uid in Config.uids:
-    subs = json.load(open(f"{uid}.json", 'r'))
-    try:
-        db.cursor.executemany(
-            """insert into submission (sid, uid, pid, result, timestamp)
-            values (%(sid)s, %(uid)s, %(pid)s, %(result)s, %(timestamp)s)""",
-            subs
-        )
-        db.cursor.close()
-        db.connection.commit()
-    except Exception as e:
-        pass
+    print(f"insert to table for uid={uid}")
+    print(result[-1])
+    db.cursor.executemany(
+        """insert ignore into submission (sid, uid, pid, result, timestamp)
+        values (%(sid)s, %(uid)s, %(pid)s, %(result)s, %(timestamp)s)""",result
+    )
